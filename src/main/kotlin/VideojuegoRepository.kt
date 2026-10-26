@@ -10,7 +10,7 @@ import java.nio.file.*
 import kotlin.io.path.*
 
 
-@JacksonXmlRootElement(localName = "Videojuego")
+@JacksonXmlRootElement(localName = "videojuegos")
 data class VideojuegosXML(
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "videojuego")
@@ -142,7 +142,7 @@ fun convertir(
     }
 
     escribir(destino, datos)
-    print("La conversión se ha completado con exito. ${datos.size} registros guardados en $destino")
+    println("La conversión se ha completado con exito. ${datos.size} registros guardados en $destino")
 }
 
 fun conversionFormatos() {

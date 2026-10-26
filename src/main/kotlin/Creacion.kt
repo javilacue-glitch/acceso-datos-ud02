@@ -5,12 +5,6 @@ import java.nio.file.StandardCopyOption
 import kotlin.io.path.extension
 import kotlin.io.path.notExists
 
-fun main(){
-    organizar()
-    listar()
-}
-
-
 fun organizar(){
 
     val datosIni = Path.of("datos", "datos_ini")

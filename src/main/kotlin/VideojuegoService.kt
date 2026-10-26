@@ -1,5 +1,21 @@
 import java.nio.file.Path
 
+fun pedirId(mensaje: String): Int? {
+    print(mensaje)
+    val id = readlnOrNull()?.trim()?.toIntOrNull()
+    if (id == null) println("ID inválido.")
+    return id
+}
+
+fun pedirNota(mensaje: String): Double {
+    while (true) {
+        print(mensaje)
+        val nota = readlnOrNull()?.trim()?.replace(',', '.')?.toDoubleOrNull()
+        if (nota != null && nota in 0.0..10.0) return nota
+        println("Nota inválida.")
+    }
+}
+
 fun listarVideojuegos(lista: List<Videojuego>) {
     println("=== LISTADO DE VIDEOJUEGOS ===")
     if (lista.isEmpty()) {
@@ -11,17 +27,8 @@ fun listarVideojuegos(lista: List<Videojuego>) {
     }
 }
 
-fun buscarPorId(lista: List<Videojuego>) {
+fun buscarPorId(lista: List<Videojuego>, id: Int) {
     println("=== BÚSQUEDA DE VIDEOJUEGO ===")
-    print("Introduce el ID a buscar: ")
-    // toIntOrNull() intenta convertir a Int si meten letras devuelve null en lugar de petar el programa
-    val id = readlnOrNull()?.toIntOrNull()
-
-    if (id == null) {
-        println("ID inválido")
-        return
-    }
-
     // Uso el .find para que devuelva el primer elemento que cumpla con la condicion que pedimos
     // en caso de que no haya ninguno se devuelve null
     val juego = lista.find { it.id == id }
@@ -51,14 +58,7 @@ fun añadirVideojuego(lista: List<Videojuego>): List<Videojuego> {
         anio = readlnOrNull()?.toIntOrNull()
     }
 
-    var nota: Double? = null
-    while (nota == null || nota < 0.0 || nota > 10.0) {
-        print("Nota (0.0 - 10.0): ")
-        nota = readlnOrNull()?.toDoubleOrNull()
-        if (nota == null || nota < 0.0 || nota > 10.0) {
-            println("Nota inválida.")
-        }
-    }
+    val nota = pedirNota("Nota (0.0 - 10.0): ")   // ← sustituye al bloque while de la nota
 
     // Buscamos el ID más alto actual para asignar el siguiente
     var maxId = 0
@@ -76,15 +76,8 @@ fun añadirVideojuego(lista: List<Videojuego>): List<Videojuego> {
     return lista + nuevoJuego
 }
 
-fun modificarNota(lista: List<Videojuego>): List<Videojuego> {
+fun modificarNota(lista: List<Videojuego>, id: Int, nuevaNota: Double): List<Videojuego> {
     println("=== MODIFICAR NOTA ===")
-    print("Introduce el ID del videojuego: ")
-    val id = readlnOrNull()?.toIntOrNull()
-
-    if (id == null) {
-        println("ID inválido.")
-        return lista
-    }
 
     var existe = false
     for (juego in lista) {
@@ -99,15 +92,6 @@ fun modificarNota(lista: List<Videojuego>): List<Videojuego> {
         return lista
     }
 
-    var nuevaNota: Double? = null
-    while (nuevaNota == null || nuevaNota < 0.0 || nuevaNota > 10.0) {
-        print("Introduce la nueva nota (0.0 - 10.0): ")
-        nuevaNota = readlnOrNull()?.toDoubleOrNull()
-        if (nuevaNota == null || nuevaNota < 0.0 || nuevaNota > 10.0) {
-            println("Nota inválida.")
-        }
-    }
-
     println("Nota actualizada correctamente.")
     // Clona el objeto cambiando la nota, y si no coincide se devuelve el objeto tal cual
     return lista.map {
@@ -115,15 +99,8 @@ fun modificarNota(lista: List<Videojuego>): List<Videojuego> {
     }
 }
 
-fun eliminarVideojuego(lista: List<Videojuego>): List<Videojuego> {
+fun eliminarVideojuego(lista: List<Videojuego>, id: Int): List<Videojuego> {
     println("=== ELIMINAR VIDEOJUEGO ===")
-    print("Introduce el ID del videojuego a eliminar: ")
-    val id = readlnOrNull()?.toIntOrNull()
-
-    if (id == null) {
-        println("ID inválido.")
-        return lista
-    }
 
     val juego = lista.find { it.id == id }
     if (juego == null) {
@@ -144,66 +121,23 @@ fun eliminarVideojuego(lista: List<Videojuego>): List<Videojuego> {
     }
 }
 
-fun integrarJSON(catalogoActual: List<Videojuego>, rutaJSON: Path): List<Videojuego> {
-    println("=== INTEGRAR DESDE JSON ===")
-
-    val juegosJSON = leerVideojuegosJSON(rutaJSON)
-
-    if (juegosJSON.isEmpty()) {
-        println("No se encontraron videojuegos o el archivo está vacio")
+fun integrarCatalogo(catalogoActual: List<Videojuego>, nuevos: List<Videojuego>): List<Videojuego> {
+    if (nuevos.isEmpty()) {
+        println("No se encontraron videojuegos o el archivo está vacío")
         return catalogoActual
     }
-
-    println("Videojuegos encontrados en el JSON:")
-    juegosJSON.forEach { v ->
-        println("${v.id} | ${v.titulo} | ${v.genero} | ${v.anio} | ${v.nota} ")
-    }
+    nuevos.forEach { v -> println("${v.id} | ${v.titulo} | ${v.genero} | ${v.anio} | ${v.nota}") }
 
     val idExistentes = catalogoActual.map { it.id }.toSet()
-    val juegosSinDuplicar = juegosJSON.filter { it.id !in idExistentes }
+    val sinDuplicar = nuevos.filter { it.id !in idExistentes }
 
-    val duplicadosIgnorados = juegosJSON.size - juegosSinDuplicar.size
-    if (duplicadosIgnorados > 0) {
-        println("Se han ignorado $duplicadosIgnorados videojuegos por tener un ID duplicado")
-    }
+    val duplicados = nuevos.size - sinDuplicar.size
+    if (duplicados > 0) println("Se han ignorado $duplicados videojuegos por tener un ID duplicado")
 
-    if (juegosSinDuplicar.isEmpty()) {
-        println("No hay videojuegos nuevos para añadir")
+    if (sinDuplicar.isEmpty()) {
+        println("No hay videojuegos nuevos que integrar")
         return catalogoActual
     }
-
-    println("Se han añadido ${juegosSinDuplicar.size} videojuegos nuevos al catálogo")
-    return catalogoActual + juegosSinDuplicar
-}
-
-fun integrarXML(catalogoActual: List<Videojuego>, rutaXML: Path): List<Videojuego> {
-    println("=== INTEGRAR DESDE XML ===")
-
-    val juegosXML = leerVideojuegosXML(rutaXML)
-
-    if (juegosXML.isEmpty()) {
-        println("No se encontraron videojuegos en el archivo XML")
-        return catalogoActual
-    }
-
-    println("Videojuegos leídos desde XML:")
-    juegosXML.forEach { v ->
-        println("${v.id} | ${v.titulo} | ${v.genero} | ${v.anio} | ${v.nota} ")
-    }
-
-    val idExistentes = catalogoActual.map { it.id }.toSet()
-    val juegosSinDuplicar = juegosXML.filter { it.id !in idExistentes }
-
-    val duplicadosIgnorados = juegosXML.size - juegosSinDuplicar.size
-    if (duplicadosIgnorados > 0) {
-        println("Se han ignorado $duplicadosIgnorados videojuegos por tener un ID duplicado")
-    }
-
-    if (juegosSinDuplicar.isEmpty()) {
-        println("Todos los videojuegos del XML ya se encuentran en el catálogo actual")
-        return catalogoActual
-    }
-
-    println("Se han integrado ${juegosSinDuplicar.size} videojuegos nuevos")
-    return catalogoActual + juegosSinDuplicar
+    println("Se han integrado ${sinDuplicar.size} videojuegos nuevos en el catálogo")
+    return catalogoActual + sinDuplicar
 }
