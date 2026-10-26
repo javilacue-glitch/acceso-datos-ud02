@@ -1,5 +1,6 @@
 import java.nio.file.Path
 
+// Pide un ID por consola. Devuelve null (y avisa) si no se escribe un número entero
 fun pedirId(mensaje: String): Int? {
     print(mensaje)
     val id = readlnOrNull()?.trim()?.toIntOrNull()
@@ -7,6 +8,8 @@ fun pedirId(mensaje: String): Int? {
     return id
 }
 
+// Pide una nota y repite hasta que sea un número entre 0 y 10.
+// Cambio la coma por punto por si escriben 9,5
 fun pedirNota(mensaje: String): Double {
     while (true) {
         print(mensaje)
@@ -16,6 +19,7 @@ fun pedirNota(mensaje: String): Double {
     }
 }
 
+// Muestra todo el catálogo por consola, o un aviso si está vacío
 fun listarVideojuegos(lista: List<Videojuego>) {
     println("=== LISTADO DE VIDEOJUEGOS ===")
     if (lista.isEmpty()) {
@@ -27,6 +31,7 @@ fun listarVideojuegos(lista: List<Videojuego>) {
     }
 }
 
+// Busca un videojuego por su ID y muestra sus datos
 fun buscarPorId(lista: List<Videojuego>, id: Int) {
     println("=== BÚSQUEDA DE VIDEOJUEGO ===")
     // Uso el .find para que devuelva el primer elemento que cumpla con la condicion que pedimos
@@ -39,6 +44,8 @@ fun buscarPorId(lista: List<Videojuego>, id: Int) {
     }
 }
 
+// Pide los datos de un videojuego nuevo y lo añade con un ID nuevo (el más alto + 1).
+// Devuelve una lista nueva, no modifica la original
 fun añadirVideojuego(lista: List<Videojuego>): List<Videojuego> {
     println("=== AÑADIR NUEVO VIDEOJUEGO ===")
     print("Título: ")
@@ -58,7 +65,7 @@ fun añadirVideojuego(lista: List<Videojuego>): List<Videojuego> {
         anio = readlnOrNull()?.toIntOrNull()
     }
 
-    val nota = pedirNota("Nota (0.0 - 10.0): ")   // ← sustituye al bloque while de la nota
+    val nota = pedirNota("Nota (0.0 - 10.0): ")   // la validación de 0 a 10 ya la hace pedirNota
 
     // Buscamos el ID más alto actual para asignar el siguiente
     var maxId = 0
@@ -76,6 +83,8 @@ fun añadirVideojuego(lista: List<Videojuego>): List<Videojuego> {
     return lista + nuevoJuego
 }
 
+// Cambia la nota del videojuego con ese ID. Como las listas son inmutables,
+// devuelve una copia con ese juego actualizado
 fun modificarNota(lista: List<Videojuego>, id: Int, nuevaNota: Double): List<Videojuego> {
     println("=== MODIFICAR NOTA ===")
 
@@ -99,6 +108,8 @@ fun modificarNota(lista: List<Videojuego>, id: Int, nuevaNota: Double): List<Vid
     }
 }
 
+// Elimina un videojuego por ID pidiendo confirmación antes. Si no existe
+// o se cancela, devuelve la lista sin tocar
 fun eliminarVideojuego(lista: List<Videojuego>, id: Int): List<Videojuego> {
     println("=== ELIMINAR VIDEOJUEGO ===")
 
@@ -121,6 +132,8 @@ fun eliminarVideojuego(lista: List<Videojuego>, id: Int): List<Videojuego> {
     }
 }
 
+// Se integran al catálogo los videojuegos leídos de un XML o JSON con el catálogo actual.
+// Los que tienen ID repetido se ignoran y avisa de cuántos se han añadido
 fun integrarCatalogo(catalogoActual: List<Videojuego>, nuevos: List<Videojuego>): List<Videojuego> {
     if (nuevos.isEmpty()) {
         println("No se encontraron videojuegos o el archivo está vacío")
@@ -128,6 +141,7 @@ fun integrarCatalogo(catalogoActual: List<Videojuego>, nuevos: List<Videojuego>)
     }
     nuevos.forEach { v -> println("${v.id} | ${v.titulo} | ${v.genero} | ${v.anio} | ${v.nota}") }
 
+    // uso un Set con los IDs actuales porque buscar en él es más rápido que recorrer la lista cada vez
     val idExistentes = catalogoActual.map { it.id }.toSet()
     val sinDuplicar = nuevos.filter { it.id !in idExistentes }
 

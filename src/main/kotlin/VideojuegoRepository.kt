@@ -10,13 +10,16 @@ import java.nio.file.*
 import kotlin.io.path.*
 
 
+// Clase auxiliar para el XML: representa la etiqueta raíz <videojuegos> que contiene la lista de <videojuego>
 @JacksonXmlRootElement(localName = "videojuegos")
 data class VideojuegosXML(
+    // sin wrapper para que cada <videojuego> este directamente en la raíz
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "videojuego")
     val listaVideojuego: List<Videojuego> = emptyList()
 )
 
+// Lee el CSV y lo convierte en una lista de Videojuegos
 fun leerDatosCSV(ruta: Path): List<Videojuego> {
     var juegos: List<Videojuego> = emptyList()
 
@@ -52,6 +55,7 @@ fun leerDatosCSV(ruta: Path): List<Videojuego> {
     return juegos
 }
 
+// Escribe la lista entera en el CSV sobrescribiendo lo anterior, cada videojuego es una fila con los campos separados por ;
 fun escribirCSV(ruta: Path, juegos: List<Videojuego>) {
     try {
         val fichero: File = ruta.toFile()
@@ -75,6 +79,7 @@ fun escribirCSV(ruta: Path, juegos: List<Videojuego>) {
     }
 }
 
+// Lee el JSON y lo convierte directamente en una lista de Videojuegos
 fun leerVideojuegosJSON(rutaJSON: Path): List<Videojuego> {
     if (!rutaJSON.exists()) {
         println("Error: No existe el fichero JSON en la ruta: $rutaJSON")
@@ -89,6 +94,7 @@ fun leerVideojuegosJSON(rutaJSON: Path): List<Videojuego> {
     }
 }
 
+// Guarda la lista en JSON con prettyPrint para que se pueda leer bien a mano
 fun escribirJSON(ruta: Path, juegos: List<Videojuego>) {
     try {
         val format = Json { prettyPrint = true }
@@ -99,6 +105,7 @@ fun escribirJSON(ruta: Path, juegos: List<Videojuego>) {
     }
 }
 
+// Lee el XML con Jackson usando VideojuegosXML como contenedor y devuelve solo la lista de juegos
 fun leerVideojuegosXML(rutaXML: Path): List<Videojuego> {
     if (!rutaXML.exists()) {
         println("Error: No existe el fichero XML en la ruta: $rutaXML")
@@ -114,6 +121,7 @@ fun leerVideojuegosXML(rutaXML: Path): List<Videojuego> {
     }
 }
 
+// Lo contrario: meto la lista en el contenedor y la escribo como XML
 fun escribirXML(ruta: Path, juegos: List<Videojuego>) {
     try {
         val mapper = XmlMapper().registerKotlinModule()
@@ -124,6 +132,7 @@ fun escribirXML(ruta: Path, juegos: List<Videojuego>) {
     }
 }
 
+// Recibe la función para leer y la función para escribir, así puede hacer correctamente la conversion sin repetir código
 fun convertir(
     origen: Path,
     destino: Path,

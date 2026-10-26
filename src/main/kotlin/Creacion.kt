@@ -1,9 +1,5 @@
-import java.nio.file.DirectoryStream
-import java.nio.file.Path
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import kotlin.io.path.extension
-import kotlin.io.path.notExists
+import java.nio.file.*
+import kotlin.io.path.*
 
 fun organizar(){
 
@@ -30,7 +26,6 @@ fun organizar(){
     }
 }
 
-//Lista la estructura de arbol que hay para comprobar que todo esta bien
 fun listar(){
     println("MOSTRANDO ESTRUCTURA DE DIRECTORIOS Y FICHEROS")
 
@@ -41,7 +36,6 @@ fun listar(){
     try {
         Files.walk(carpeta).use { stream ->
             stream.sorted().forEach { path ->
-                //Calculo de tabulaciones para saber la posicion del arbol concreta
                 val profundidad = path.nameCount - carpeta.nameCount
                 val tabulacion = "\t".repeat(profundidad)
                 val prefijo = if (Files.isDirectory(path)) "[DIR]" else "[FILE]"

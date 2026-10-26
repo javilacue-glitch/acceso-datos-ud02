@@ -1,11 +1,13 @@
 import java.nio.file.Path
 import kotlin.io.path.Path
 
+// Menú principal: carga el catálogo desde el CSV al arrancar y repite el menú hasta que se elige la opcion "Salir"
 fun main() {
     organizar()
     val rutaCSV = Path("datos/datos_ini/videojuegos.csv")
     val rutaXML = Path("datos/datos_ini/videojuegos.xml")
     val rutaJSON = Path("datos/datos_ini/videojuegos.json")
+    // el catálogo vive en memoria como una lista y cada opción devuelve la lista actualizada
     var catalogo = leerDatosCSV(rutaCSV)
 
     while (true) {
@@ -14,10 +16,12 @@ fun main() {
         println("2. Leer catálogo desde XML")
         println("3. Leer catálogo desde JSON")
         println("4. Conversiones entre formatos")
+        println("5. Gestion fichero BIN")
         println("0. Salir")
         println("====================================")
         print("Elige una opción: ")
 
+        // trim para que un espacio de más no dé error
         when (readlnOrNull()?.trim()?.lowercase()) {
             "1" -> {
                 catalogo = gestionCSV(catalogo, rutaCSV)
@@ -37,6 +41,10 @@ fun main() {
                 conversionFormatos()
             }
 
+            "5" -> {
+                gestionBIN()
+            }
+
             "0" -> {
                 println("Saliendo del programa...")
                 break
@@ -47,6 +55,7 @@ fun main() {
     }
 }
 
+// Después de añadir, modificar o eliminar se reescribe el CSV para no perder los cambios
 fun gestionCSV(listaInicial: List<Videojuego>, ruta: Path): List<Videojuego> {
     var lista = listaInicial
 
@@ -75,6 +84,7 @@ fun gestionCSV(listaInicial: List<Videojuego>, ruta: Path): List<Videojuego> {
             "4" -> {
                 val id = pedirId("Introduce el ID del videojuego: ")
                 if (id != null) {
+                    // compruebo primero que el ID existe para no pedir la nota y que luego no haya nada que modificar
                     if (lista.none { it.id == id }) {
                         println("Error: No existe ningún videojuego con el ID $id.")
                     } else {
