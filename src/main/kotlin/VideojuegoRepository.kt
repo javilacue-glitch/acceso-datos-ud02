@@ -1,14 +1,21 @@
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.dataformat.xml.annotation.*
+import com.fasterxml.jackson.module.kotlin.*
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import javax.xml.parsers.DocumentBuilderFactory
-import org.w3c.dom.Element
-import org.w3c.dom.Node
-import kotlin.io.path.exists
-import kotlin.io.path.readText
+import kotlinx.serialization.encodeToString
+import java.io.*
+import java.nio.file.*
+import kotlin.io.path.*
+
+
+@JacksonXmlRootElement(localName = "Videojuego")
+data class VideojuegosXML(
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "videojuego")
+    val listaVideojuego: List<Videojuego> = emptyList()
+)
 
 fun leerDatosCSV(ruta: Path): List<Videojuego> {
     var juegos: List<Videojuego> = emptyList()
@@ -68,30 +75,27 @@ fun escribirCSV(ruta: Path, juegos: List<Videojuego>) {
     }
 }
 
-@JacksonXmlRootElement(localName = "Videojuego")
-data class VideojuegosXML(
-    @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "videojuego")
-    val listaVideojuego: List<Videojuego> = emptyList()
-)
 fun leerVideojuegosJSON(rutaJSON: Path): List<Videojuego> {
-    if (!rutaJSON.exists()){
+    if (!rutaJSON.exists()) {
         println("Error: No existe el fichero JSON en la ruta: $rutaJSON")
         return emptyList()
     }
-
     return try {
         val textoJSON = rutaJSON.readText()
-        // Decodificamos utilizando la clase VideojuegoJSON
-        val jsonDecodificado = Json.decodeFromString<List<VideojuegoJSON>>(textoJSON)
-
-        // Mapeamos a la clase principal Videojuego
-        jsonDecodificado.map {
-            Videojuego(it.id, it.titulo, it.genero, it.anio, it.nota)
-        }
-    } catch (e: Exception){
+        Json.decodeFromString<List<Videojuego>>(textoJSON)
+    } catch (e: Exception) {
         println("Error al parsear el JSON: ${e.message}")
         emptyList()
+    }
+}
+
+fun escribirJSON(ruta: Path, juegos: List<Videojuego>) {
+    try {
+        val format = Json { prettyPrint = true }
+        val textoJSON = format.encodeToString(juegos)
+        ruta.toFile().writeText(textoJSON)
+    } catch (e: Exception) {
+        println("Error al escribir el JSON: ${e.message}")
     }
 }
 
@@ -100,38 +104,54 @@ fun leerVideojuegosXML(rutaXML: Path): List<Videojuego> {
         println("Error: No existe el fichero XML en la ruta: $rutaXML")
         return emptyList()
     }
-
-    val listaXML = mutableListOf<Videojuego>()
-
     return try {
-        val factory = DocumentBuilderFactory.newInstance()
-        val builder = factory.newDocumentBuilder()
-        val document = builder.parse(rutaXML.toFile())
-        document.documentElement.normalize()
-
-        val nodeList = document.getElementsByTagName("videojuego")
-
-        for (i in 0 until nodeList.length) {
-            val node = nodeList.item(i)
-            if (node.nodeType == Node.ELEMENT_NODE) {
-                val element = node as Element
-                val id = element.getElementsByTagName("id").item(0).textContent.toInt()
-                val titulo = element.getElementsByTagName("titulo").item(0).textContent
-                val genero = element.getElementsByTagName("genero").item(0).textContent
-                val anio = element.getElementsByTagName("anio").item(0).textContent.toInt()
-                val nota = element.getElementsByTagName("nota").item(0).textContent.toDouble()
-
-                listaXML.add(Videojuego(id, titulo, genero, anio, nota))
-            }
-        }
-        listaXML
+        val mapper = XmlMapper().registerKotlinModule()
+        val contenedor = mapper.readValue(rutaXML.toFile(), VideojuegosXML::class.java)
+        contenedor.listaVideojuego
     } catch (e: Exception) {
-        println("Error al parsear el XML: ${e.message}")
+        println("Error al parsear el XML con Jackson: ${e.message}")
         emptyList()
     }
 }
 
-fun conversionFormatos(rutaConversor: Path): List<Videojuego> {
+fun escribirXML(ruta: Path, juegos: List<Videojuego>) {
+    try {
+        val mapper = XmlMapper().registerKotlinModule()
+        val contenedor = VideojuegosXML(juegos)
+        mapper.writerWithDefaultPrettyPrinter().writeValue(ruta.toFile(), contenedor)
+    } catch (e: Exception) {
+        println("Error al escribir el XML: ${e.message}")
+    }
+}
+
+fun convertir(
+    origen: Path,
+    destino: Path,
+    leer: (Path) -> List<Videojuego>,
+    escribir: (Path, List<Videojuego>) -> Unit
+) {
+    if (!origen.exists()){
+        println("Error: El fichero de origen no existe ($origen)")
+        return
+    }
+
+    val datos = leer(origen)
+    if (datos.isEmpty()) {
+        println("No se encuentró ningun dato en el fichero de origen")
+        return
+    }
+
+    escribir(destino, datos)
+    print("La conversión se ha completado con exito. ${datos.size} registros guardados en $destino")
+}
+
+fun conversionFormatos() {
+    val dirIni = Path.of("datos/datos_ini")
+    val dirFin = Path.of("datos/datos_fin")
+
+    // Si no existe el directorio final, lo creamos
+    if (!dirFin.exists()) Files.createDirectories(dirFin)
+
     while (true) {
         println("--- Conversiones ---")
         println("1. CSV  → JSON")
@@ -143,38 +163,15 @@ fun conversionFormatos(rutaConversor: Path): List<Videojuego> {
         println("0. Volver")
         print("Elige una opción: ")
 
-        when (readlnOrNull()?.trim()?.lowercase()) {
-            "1" -> {
-                catalogo = gestionCSV(catalogo, rutaCSV)
-            }
-
-            "2" -> {
-                catalogo = integrarXML(catalogo, rutaXML)
-                escribirCSV(rutaCSV, catalogo)
-            }
-
-            "3" -> {
-                catalogo = integrarJSON(catalogo, rutaJSON)
-            }
-
-            "4" -> {
-
-            }
-
-            "5" -> {
-
-            }
-
-            "6" -> {
-
-            }
-
-            "0" -> {
-                println("Saliendo del programa...")
-                break
-            }
-
-            else -> println("No existe esa opción, selecciona otra")
+        when (readlnOrNull()?.trim()) {
+            "1" -> convertir(dirIni.resolve("videojuegos.csv"), dirFin.resolve("videojuegos.json"), ::leerDatosCSV, ::escribirJSON)
+            "2" -> convertir(dirIni.resolve("videojuegos.csv"), dirFin.resolve("videojuegos.xml"), ::leerDatosCSV, ::escribirXML)
+            "3" -> convertir(dirIni.resolve("videojuegos.json"), dirFin.resolve("videojuegos.csv"), ::leerVideojuegosJSON, ::escribirCSV)
+            "4" -> convertir(dirIni.resolve("videojuegos.json"), dirFin.resolve("videojuegos.xml"), ::leerVideojuegosJSON, ::escribirXML)
+            "5" -> convertir(dirIni.resolve("videojuegos.xml"), dirFin.resolve("videojuegos.csv"), ::leerVideojuegosXML, ::escribirCSV)
+            "6" -> convertir(dirIni.resolve("videojuegos.xml"), dirFin.resolve("videojuegos.json"), ::leerVideojuegosXML, ::escribirJSON)
+            "0" -> break
+            else -> println("Opción no válida.")
         }
     }
 }

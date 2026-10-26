@@ -1,3 +1,6 @@
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Videojuego(
     val id: Int,
     val titulo: String,

@@ -32,7 +32,7 @@ fun main() {
             }
 
             "4" -> {
-
+                conversionFormatos()
             }
 
             "0" -> {
