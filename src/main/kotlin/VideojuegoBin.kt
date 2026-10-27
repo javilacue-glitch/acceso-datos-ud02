@@ -4,9 +4,9 @@ import java.nio.file.Path
 
 
 // Estructura de cada registro del fichero binario. Todos miden lo mismo, así puedo saltar
-// a cualquier posición multiplicando: id (Int, 4 bytes), titulo (30 caracteres x 2 bytes = 60),
-// genero (20 caracteres = 40), anio (Int, 4) y nota (Double, 8). Total: 116 bytes
-const val LONG_TITULO = 30
+// a cualquier posición multiplicando: id (Int, 4 bytes), titulo (40 caracteres x 2 bytes = 80),
+// genero (20 caracteres = 40), anio (Int, 4) y nota (Double, 8). Total: 136 bytes
+const val LONG_TITULO = 40
 const val LONG_GENERO = 20
 const val TAM_ID = 4
 const val TAM_TITULO = LONG_TITULO * 2
@@ -41,7 +41,7 @@ fun escribirRegistro(raf: RandomAccessFile, v: Videojuego) {
     raf.writeDouble(v.nota)
 }
 
-// Lee un registro en el mismo orden en que se escribió, en caso de cambiar el orden los datos sal error
+// Lee un registro en el mismo orden en que se escribió, en caso de cambiar el orden, los datos salen con error
 fun leerRegistro(raf: RandomAccessFile): Videojuego {
     val id = raf.readInt()
     val titulo = leerTexto(raf, LONG_TITULO)

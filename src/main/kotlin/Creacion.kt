@@ -6,22 +6,22 @@ fun organizar(){
     val datosIni = Path.of("datos", "datos_ini")
     val datosFin = Path.of("datos", "datos_fin")
 
-    println("CREACION DE RUTAS PROYECTO")
+    println("CREACIÓN DE RUTAS PROYECTO")
     println("Creando rutas...")
     try {
 
         if (Files.notExists(datosIni)){
-            println("Creacion de ruta para DATOS_INI")
+            println("Creación de ruta para DATOS_INI")
             Files.createDirectories(datosIni)
         }
 
         if (Files.notExists(datosFin)){
-            println("Creacion de ruta para DATOS_FIN")
+            println("Creación de ruta para DATOS_FIN")
             Files.createDirectories(datosFin)
         }
 
     } catch (e: Exception) {
-        println("HA OCURRIDO UN ERROR DURANTE LA CREACION DE LAS CARPETAS")
+        println("HA OCURRIDO UN ERROR DURANTE LA CREACIÓN DE LAS CARPETAS")
         e.printStackTrace()
     }
 }

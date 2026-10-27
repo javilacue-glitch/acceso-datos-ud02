@@ -13,7 +13,7 @@ import kotlin.io.path.*
 // Clase auxiliar para el XML: representa la etiqueta raíz <videojuegos> que contiene la lista de <videojuego>
 @JacksonXmlRootElement(localName = "videojuegos")
 data class VideojuegosXML(
-    // sin wrapper para que cada <videojuego> este directamente en la raíz
+    // sin wrapper para que cada <videojuego> esté directamente en la raíz
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "videojuego")
     val listaVideojuego: List<Videojuego> = emptyList()
@@ -51,7 +51,7 @@ fun leerDatosCSV(ruta: Path): List<Videojuego> {
             }
         }
     }
-    println("---Información leída con éxito de: $ruta")
+    println("--- Información leída con éxito de: $ruta")
     return juegos
 }
 
@@ -132,7 +132,7 @@ fun escribirXML(ruta: Path, juegos: List<Videojuego>) {
     }
 }
 
-// Recibe la función para leer y la función para escribir, así puede hacer correctamente la conversion sin repetir código
+// Recibe la función para leer y la función para escribir, así puede hacer correctamente la conversión sin repetir código
 fun convertir(
     origen: Path,
     destino: Path,
@@ -146,12 +146,12 @@ fun convertir(
 
     val datos = leer(origen)
     if (datos.isEmpty()) {
-        println("No se encuentró ningun dato en el fichero de origen")
+        println("No se encontró ningún dato en el fichero de origen")
         return
     }
 
     escribir(destino, datos)
-    println("La conversión se ha completado con exito. ${datos.size} registros guardados en $destino")
+    println("La conversión se ha completado con éxito. ${datos.size} registros guardados en $destino")
 }
 
 fun conversionFormatos() {

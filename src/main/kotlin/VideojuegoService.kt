@@ -34,7 +34,7 @@ fun listarVideojuegos(lista: List<Videojuego>) {
 // Busca un videojuego por su ID y muestra sus datos
 fun buscarPorId(lista: List<Videojuego>, id: Int) {
     println("=== BÚSQUEDA DE VIDEOJUEGO ===")
-    // Uso el .find para que devuelva el primer elemento que cumpla con la condicion que pedimos
+    // Uso el .find para que devuelva el primer elemento que cumpla con la condición que pedimos
     // en caso de que no haya ninguno se devuelve null
     val juego = lista.find { it.id == id }
     if (juego != null) {
@@ -133,7 +133,7 @@ fun eliminarVideojuego(lista: List<Videojuego>, id: Int): List<Videojuego> {
 }
 
 // Se integran al catálogo los videojuegos leídos de un XML o JSON con el catálogo actual.
-// Los que tienen ID repetido se ignoran y avisa de cuántos se han añadido
+// Los que tienen ID repetido se ignoran y se avisa de cuántos se han añadido
 fun integrarCatalogo(catalogoActual: List<Videojuego>, nuevos: List<Videojuego>): List<Videojuego> {
     if (nuevos.isEmpty()) {
         println("No se encontraron videojuegos o el archivo está vacío")

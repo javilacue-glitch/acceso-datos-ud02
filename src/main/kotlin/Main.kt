@@ -1,22 +1,22 @@
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-// Menú principal: carga el catálogo desde el CSV al arrancar y repite el menú hasta que se elige la opcion "Salir"
+// Menú principal: carga el catálogo desde el CSV al arrancar y repite el menú hasta que se elige la opción "Salir"
 fun main() {
     organizar()
     val rutaCSV = Path("datos/datos_ini/videojuegos.csv")
     val rutaXML = Path("datos/datos_ini/videojuegos.xml")
     val rutaJSON = Path("datos/datos_ini/videojuegos.json")
-    // el catálogo vive en memoria como una lista y cada opción devuelve la lista actualizada
+    // el catálogo se queda en memoria como una lista y cada opción devuelve la lista actualizada
     var catalogo = leerDatosCSV(rutaCSV)
 
     while (true) {
         println("===== CATÁLOGO DE VIDEOJUEGOS =====")
-        println("1. Gestion CSV")
+        println("1. Gestión CSV")
         println("2. Leer catálogo desde XML")
         println("3. Leer catálogo desde JSON")
         println("4. Conversiones entre formatos")
-        println("5. Gestion fichero BIN")
+        println("5. Gestión fichero BIN")
         println("0. Salir")
         println("====================================")
         print("Elige una opción: ")
@@ -67,6 +67,7 @@ fun gestionCSV(listaInicial: List<Videojuego>, ruta: Path): List<Videojuego> {
         println("4. Modificar nota de un videojuego")
         println("5. Eliminar videojuego")
         println("0. Volver al menú principal")
+        print("Elige una opción: ")
 
         when (readlnOrNull()?.lowercase()?.trim()) {
             "1" -> listarVideojuegos(lista)
